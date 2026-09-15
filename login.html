@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dentag Italia — Accesso Portale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #05182d;
+    --navy2: #0d2540;
+    --navy3: #14304f;
+    --gold: #f4b60a;
+    --text: #e8edf3;
+    --muted: #93a3b8;
+    --red: #ef5a6f;
+    --border: #1c3a5c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--navy); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .box {
+    background: var(--navy2); border: 1px solid var(--border); border-radius: 16px;
+    padding: 40px 36px; width: 100%; max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  }
+  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .logo .mark {
+    width: 44px; height: 44px; border-radius: 11px; background: var(--gold);
+    color: var(--navy); font-weight: 700; font-family: 'Space Grotesk', sans-serif;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .logo h1 { font-family: 'Space Grotesk', sans-serif; font-size: 17px; margin: 0; }
+  .logo p { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 16px 0 6px; }
+  input {
+    width: 100%; background: var(--navy3); border: 1px solid var(--border); border-radius: 8px;
+    padding: 11px 13px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px;
+  }
+  input:focus { outline: none; border-color: var(--gold); }
+  button {
+    width: 100%; margin-top: 24px; background: var(--gold); color: var(--navy); border: none;
+    border-radius: 8px; padding: 12px; font-weight: 700; font-size: 14px; cursor: pointer;
+    font-family: 'Inter', sans-serif; transition: opacity .15s;
+  }
+  button:disabled { opacity: .6; cursor: wait; }
+  .errore {
+    display: none; background: rgba(239,90,111,.12); border: 1px solid rgba(239,90,111,.35);
+    color: var(--red); border-radius: 8px; padding: 10px 12px; font-size: 12.5px; margin-top: 16px;
+  }
+  .footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <div class="logo">
+    <div class="mark">DT</div>
+    <div>
+      <h1>Dentag Italia</h1>
+      <p>Portale Commerciale</p>
+    </div>
+  </div>
+
+  <form id="form-login" onsubmit="return effettuaLogin(event)">
+    <label for="email">Email</label>
+    <input type="email" id="email" required autocomplete="username">
+
+    <label for="password">Password</label>
+    <input type="password" id="password" required autocomplete="current-password">
+
+    <div class="errore" id="errore"></div>
+
+    <button type="submit" id="btn-login">Accedi</button>
+  </form>
+
+  <div class="footer">Dentag Italia S.r.l. — accesso riservato</div>
+</div>
+
+<script>
+  // <-- Sostituisci con l'URL /exec del tuo Apps Script "API Login Portale"
+  var API_LOGIN_URL = 'https://script.google.com/macros/s/AKfycby0aFQJsqNIhi_MMyK0uroLDexwE5Yuy6SUcrr2i3FvCekBS81DSfRYYCpHtMKw4bRY/exec';
+
+  function effettuaLogin(e) {
+    e.preventDefault();
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    var btn = document.getElementById('btn-login');
+    var errore = document.getElementById('errore');
+    errore.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Accesso in corso...';
+
+    fetch(API_LOGIN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita il preflight CORS
+      body: JSON.stringify({ azione: 'login', email: email, password: password })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        btn.disabled = false; btn.textContent = 'Accedi';
+        if (!r.ok) {
+          errore.textContent = r.messaggio || 'Errore di accesso.';
+          errore.style.display = 'block';
+          return;
+        }
+        sessionStorage.setItem('dentag_token', r.token);
+        sessionStorage.setItem('dentag_nome', r.nome);
+        sessionStorage.setItem('dentag_ruolo', r.ruolo);
+        sessionStorage.setItem('dentag_moduli', JSON.stringify(r.moduli));
+        window.location.href = 'shell.html';
+      })
+      .catch(function(err) {
+        btn.disabled = false; btn.textContent = 'Accedi';
+        errore.textContent = 'Errore di connessione: ' + err.message;
+        errore.style.display = 'block';
+      });
+
+    return false;
+  }
+</script>
+</body>
+</html>
