@@ -83,7 +83,7 @@
 
 <script>
   // <-- Sostituisci con l'URL /exec del tuo Apps Script "API Login Portale"
-  var API_LOGIN_URL = 'https://script.google.com/macros/s/AKfycby0aFQJsqNIhi_MMyK0uroLDexwE5Yuy6SUcrr2i3FvCekBS81DSfRYYCpHtMKw4bRY/exec';
+  var API_LOGIN_URL = 'INCOLLA_QUI_URL_APPS_SCRIPT_LOGIN';
 
   function effettuaLogin(e) {
     e.preventDefault();
@@ -94,11 +94,9 @@
     errore.style.display = 'none';
     btn.disabled = true; btn.textContent = 'Accesso in corso...';
 
-    fetch(API_LOGIN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita il preflight CORS
-      body: JSON.stringify({ azione: 'login', email: email, password: password })
-    })
+    var url = API_LOGIN_URL + '?azione=login&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password);
+
+    fetch(url)
       .then(function(r) { return r.json(); })
       .then(function(r) {
         btn.disabled = false; btn.textContent = 'Accedi';
